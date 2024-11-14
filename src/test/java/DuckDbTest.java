@@ -17,6 +17,18 @@ public class DuckDbTest {
         try(var conn = DriverManager.getConnection("jdbc:duckdb:").unwrap(DuckDBConnection.class)) {
             var sql = "SELECT ?";
 
+            // Passing in the UUID as a string works; this test passes
+            try (var stmt = conn.prepareStatement(sql)) {
+                stmt.setObject(1, uuid.toString());
+
+                try(var rs = stmt.executeQuery().unwrap(DuckDBResultSet.class)) {
+                    while(rs.next()) {
+                        assertEquals(uuid, rs.getUuid(1));
+                    }
+                }
+            }
+
+            // Passing in the UUID as a UUID breaks; this test fails
             try (var stmt = conn.prepareStatement(sql)) {
                 stmt.setObject(1, uuid);
 
